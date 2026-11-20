@@ -36,23 +36,20 @@ input:focus{outline:2px solid var(--accent)}
 .b{padding:11px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:.95rem;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
 .b.p{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
 .b.d{color:var(--danger)}
-.paygrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
-.pfield label{display:flex;justify-content:space-between;align-items:center;font-size:.75rem;color:var(--muted);margin-bottom:4px}
-.pfield .fill{border:0;background:none;color:var(--accent);font-size:.72rem;font-weight:600;cursor:pointer;padding:0}
+.paygrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pfield label{display:block;font-size:.75rem;color:var(--muted);margin-bottom:4px}
 .pfield input{width:100%;font-size:1.05rem;font-weight:700}
-.bal{margin-top:8px;font-size:.82rem;display:flex;justify-content:space-between;color:var(--muted)}
-.bal.warn{color:var(--danger);font-weight:600}
-.bal.ok{color:var(--accent);font-weight:600}
 .acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
 .acts .b{padding:14px}
 .line{display:flex;justify-content:space-between;padding:4px 0;font-size:.95rem}
 .line span:last-child{font-weight:600}
+.line.tot{border-top:1px solid var(--line);margin-top:4px;padding-top:8px;font-weight:700;color:var(--accent)}
 .day{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .day .v{font-size:1.5rem;font-weight:700}
-.split{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
-.sbox{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
-.sbox .sl{font-size:.75rem;color:var(--muted)}
-.sbox .sv{font-size:1.1rem;font-weight:700;margin-top:2px}
+.split{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+.sbox{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 8px}
+.sbox .sl{font-size:.72rem;color:var(--muted)}
+.sbox .sv{font-size:1rem;font-weight:700;margin-top:2px}
 .empty{color:var(--muted);font-size:.9rem}
 .pdfrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
 #msg{margin-top:10px;font-size:.85rem;color:var(--muted);min-height:1.2em;text-align:center}
@@ -63,7 +60,7 @@ input:focus{outline:2px solid var(--accent)}
 <main>
 <div class="top">
   <div class="total">
-    <div><div class="lbl">Total to pay</div><div class="big" id="total">₹0</div></div>
+    <div><div class="lbl">Grand total</div><div class="big" id="total">₹0</div></div>
     <div class="cnt">Tickets<b id="tix">0</b></div>
   </div>
 </div>
@@ -71,7 +68,7 @@ input:focus{outline:2px solid var(--accent)}
 <div class="tiles" id="tiles"></div>
 
 <div class="card">
-  <h2>Other amount</h2>
+  <h2>Other prize amount</h2>
   <div class="add">
     <input id="custom" type="number" inputmode="numeric" placeholder="e.g. 250">
     <button class="b p" id="addTile">Add</button>
@@ -79,19 +76,22 @@ input:focus{outline:2px solid var(--accent)}
 </div>
 
 <div class="card">
-  <h2>This bill</h2>
-  <div id="bill"><div class="empty">Tap + or type the ticket count.</div></div>
+  <h2>Extra amount (Cash &amp; Online)</h2>
   <div class="paygrid">
     <div class="pfield">
-      <label for="cashIn"><span>Cash paid (₹)</span><button type="button" class="fill" id="fillCash">Full</button></label>
+      <label for="cashIn">Cash (₹)</label>
       <input id="cashIn" type="number" inputmode="numeric" min="0" placeholder="0">
     </div>
     <div class="pfield">
-      <label for="upiIn"><span>Online / UPI (₹)</span><button type="button" class="fill" id="fillUpi">Full</button></label>
+      <label for="upiIn">Online / UPI (₹)</label>
       <input id="upiIn" type="number" inputmode="numeric" min="0" placeholder="0">
     </div>
   </div>
-  <div class="bal" id="balInfo"><span>Enter cash and/or online paid amount</span><span></span></div>
+</div>
+
+<div class="card">
+  <h2>This bill</h2>
+  <div id="bill"><div class="empty">Tap + or enter cash / online amount.</div></div>
   <div class="pdfrow"><button class="b" id="billPdf">Share PDF</button><button class="b p" id="done">Done · add to day</button></div>
   <div class="pdfrow"><a class="b" id="wa" href="https://wa.me/" target="_blank" rel="noopener">Send on WhatsApp</a><a class="b" id="tg" href="https://t.me/share/url" target="_blank" rel="noopener">Send on Telegram</a></div>
 </div>
@@ -103,11 +103,12 @@ input:focus{outline:2px solid var(--accent)}
 
 <div class="card">
   <h2>Today</h2>
-  <div class="day"><div><div class="v" id="dayTotal">₹0</div><div class="empty" id="dayInfo">0 bills</div></div>
+  <div class="day"><div><div class="v" id="dayTotal">₹0</div><div class="empty" id="dayInfo">0 bills · 0 tickets</div></div>
   <button class="b d" id="resetDay">Reset day</button></div>
   <div class="split">
-    <div class="sbox"><div class="sl">Cash paid</div><div class="sv" id="dayCash">₹0</div></div>
-    <div class="sbox"><div class="sl">Online / UPI paid</div><div class="sv" id="dayUpi">₹0</div></div>
+    <div class="sbox"><div class="sl">Prize money</div><div class="sv" id="dayPrize">₹0</div></div>
+    <div class="sbox"><div class="sl">Cash</div><div class="sv" id="dayCash">₹0</div></div>
+    <div class="sbox"><div class="sl">Online</div><div class="sv" id="dayUpi">₹0</div></div>
   </div>
   <div class="pdfrow"><a class="b" id="dayWa" href="https://wa.me/" target="_blank" rel="noopener">Day on WhatsApp</a><a class="b" id="dayTg" href="https://t.me/share/url" target="_blank" rel="noopener">Day on Telegram</a></div>
 </div>
@@ -121,20 +122,20 @@ var DEFAULT=[100,200,500,1000,2000,5000];
 var amounts=DEFAULT.slice();
 var counts={};
 var log=[];
-var cashPaid=0;
-var upiPaid=0;
+var cashAmt=0;
+var upiAmt=0;
 try{var s=JSON.parse(localStorage.getItem(KEY)||"null");
 if(s){
   if(s.amounts&&s.amounts.length)amounts=s.amounts;
   counts=s.counts||{};
   log=s.log||[];
-  if(isFinite(s.cashPaid)&&s.cashPaid>0)cashPaid=s.cashPaid;
-  if(isFinite(s.upiPaid)&&s.upiPaid>0)upiPaid=s.upiPaid;
+  if(isFinite(s.cashAmt)&&s.cashAmt>0)cashAmt=s.cashAmt;
+  if(isFinite(s.upiAmt)&&s.upiAmt>0)upiAmt=s.upiAmt;
 }}catch(e){}
 var fmt=new Intl.NumberFormat("en-IN");
 function inr(n){return "₹"+fmt.format(n)}
 function rs(n){return "Rs. "+fmt.format(n)}
-function save(){try{localStorage.setItem(KEY,JSON.stringify({amounts:amounts,counts:counts,log:log,cashPaid:cashPaid,upiPaid:upiPaid}))}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({amounts:amounts,counts:counts,log:log,cashAmt:cashAmt,upiAmt:upiAmt}))}catch(e){}}
 function msg(t){var m=document.getElementById("msg");m.textContent=t;if(t)setTimeout(function(){if(m.textContent===t)m.textContent=""},4000)}
 var tiles=document.getElementById("tiles");
 var cashEl=document.getElementById("cashIn");
@@ -154,7 +155,7 @@ function build(){
 function curLines(){
   var l=[];amounts.forEach(function(a){var c=counts[a]||0;if(c)l.push([a,c])});return l;
 }
-function sumLines(l){var t=0,n=0;l.forEach(function(x){t+=x[0]*x[1];n+=x[1]});return{total:t,tix:n}}
+function sumLines(l){var t=0,n=0;l.forEach(function(x){t+=x[0]*x[1];n+=x[1]});return{prize:t,tix:n}}
 function stamp(ts){var d=new Date(ts);return d.toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"})+", "+d.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"})}
 
 function cleanNum(v){
@@ -163,78 +164,59 @@ function cleanNum(v){
 }
 
 cashEl.addEventListener("input",function(){
-  cashPaid=cleanNum(cashEl.value);
-  var tot=sumLines(curLines()).total;
-  if(tot>0&&cashPaid<=tot&&document.activeElement===cashEl){
-    upiPaid=tot-cashPaid;
-    upiEl.value=upiPaid?upiPaid:"";
-  }
+  cashAmt=cleanNum(cashEl.value);
   calc();
 });
 upiEl.addEventListener("input",function(){
-  upiPaid=cleanNum(upiEl.value);
-  var tot=sumLines(curLines()).total;
-  if(tot>0&&upiPaid<=tot&&document.activeElement===upiEl){
-    cashPaid=tot-upiPaid;
-    cashEl.value=cashPaid?cashPaid:"";
-  }
+  upiAmt=cleanNum(upiEl.value);
   calc();
 });
 
-document.getElementById("fillCash").onclick=function(){
-  var tot=sumLines(curLines()).total;
-  if(!tot){msg("Add tickets first.");return}
-  cashPaid=tot;upiPaid=0;
-  cashEl.value=cashPaid;upiEl.value="";
-  calc();
-};
-document.getElementById("fillUpi").onclick=function(){
-  var tot=sumLines(curLines()).total;
-  if(!tot){msg("Add tickets first.");return}
-  upiPaid=tot;cashPaid=0;
-  upiEl.value=upiPaid;cashEl.value="";
-  calc();
-};
-
-function resolvedBillPay(total){
-  if(cashPaid>0||upiPaid>0)return{cash:cashPaid,upi:upiPaid};
-  return{cash:total,upi:0};
+function curBill(){
+  var l=curLines(),r=sumLines(l);
+  var grand=r.prize+cashAmt+upiAmt;
+  return{lines:l,prize:r.prize,tix:r.tix,cash:cashAmt,upi:upiAmt,total:grand};
 }
 
 function dayBreakdown(){
-  var dt=0,dn=0,cash=0,upi=0;
+  var grand=0,prize=0,tix=0,cash=0,upi=0;
   log.forEach(function(b){
-    dt+=b.total;dn+=b.tix;
-    if(typeof b.cash==="number"||typeof b.upi==="number"){
-      cash+=(b.cash||0);upi+=(b.upi||0);
-    }else if(b.mode==="UPI"){
-      upi+=b.total;
-    }else{
-      cash+=b.total;
-    }
+    var bc=b.cash||0,bu=b.upi||0;
+    var bp=(typeof b.prize==="number")?b.prize:Math.max(0,(b.total||0)-bc-bu);
+    var bt=(typeof b.total==="number")?b.total:(bp+bc+bu);
+    grand+=bt;prize+=bp;tix+=(b.tix||0);cash+=bc;upi+=bu;
   });
-  return{total:dt,tix:dn,cash:cash,upi:upi};
+  return{total:grand,prize:prize,tix:tix,cash:cash,upi:upi};
 }
 
 function billText(){
-  var l=curLines();if(!l.length)return null;
-  var r=sumLines(l),p=resolvedBillPay(r.total);
-  var t=["*Prize Payout Bill* - "+stamp(Date.now()),""];
-  l.forEach(function(x){t.push(x[1]+" x "+rs(x[0])+" = "+rs(x[0]*x[1]))});
-  t.push("","Total tickets: *"+r.tix+"*","Total amount: *"+rs(r.total)+"*");
-  if(p.cash>0)t.push("Cash paid: *"+rs(p.cash)+"*");
-  if(p.upi>0)t.push("Online / UPI paid: *"+rs(p.upi)+"*");
+  var b=curBill();
+  if(!b.lines.length&&!b.cash&&!b.upi)return null;
+  var t=["*Bill Summary* - "+stamp(Date.now()),""];
+  if(b.lines.length){
+    b.lines.forEach(function(x){t.push(x[1]+" x "+rs(x[0])+" = "+rs(x[0]*x[1]))});
+    t.push("Prize money ("+b.tix+" tix): *"+rs(b.prize)+"*");
+  }
+  if(b.cash>0)t.push("Cash: *"+rs(b.cash)+"*");
+  if(b.upi>0)t.push("Online / UPI: *"+rs(b.upi)+"*");
+  t.push("","Grand total: *"+rs(b.total)+"*");
   return t.join("\n");
 }
 
 function dayText(){
   if(!log.length)return null;
   var agg={},d=dayBreakdown();
-  log.forEach(function(b){b.lines.forEach(function(x){agg[x[0]]=(agg[x[0]]||0)+x[1]})});
+  log.forEach(function(b){(b.lines||[]).forEach(function(x){agg[x[0]]=(agg[x[0]]||0)+x[1]})});
   var keys=Object.keys(agg).map(Number).sort(function(a,b){return a-b});
-  var t=["*Daily Payout Report* - "+stamp(Date.now()),"Bills: "+log.length,""];
-  keys.forEach(function(a){t.push(agg[a]+" x "+rs(a)+" = "+rs(a*agg[a]))});
-  t.push("","Cash paid: *"+rs(d.cash)+"*","Online / UPI paid: *"+rs(d.upi)+"*","Total tickets: *"+d.tix+"*","Total amount: *"+rs(d.total)+"*");
+  var t=["*Daily Report* - "+stamp(Date.now()),"Bills: "+log.length,""];
+  if(keys.length){
+    keys.forEach(function(a){t.push(agg[a]+" x "+rs(a)+" = "+rs(a*agg[a]))});
+    t.push("");
+  }
+  t.push("Prize money ("+d.tix+" tix): *"+rs(d.prize)+"*");
+  t.push("Cash: *"+rs(d.cash)+"*");
+  t.push("Online / UPI: *"+rs(d.upi)+"*");
+  t.push("Grand total: *"+rs(d.total)+"*");
   return t.join("\n");
 }
 
@@ -251,7 +233,7 @@ function updateLinks(){
 }
 
 function calc(){
-  var lines=curLines(),r=sumLines(lines),html=[];
+  var b=curBill(),html=[];
   amounts.forEach(function(a){
     var c=counts[a]||0,t=document.getElementById("t"+a);
     if(!t)return;
@@ -260,36 +242,27 @@ function calc(){
     t.querySelector(".sub").textContent=c?inr(a*c):"";
     t.className="tile"+(c?" on":"");
   });
-  lines.forEach(function(x){html.push('<div class="line"><span>'+x[1]+' × '+inr(x[0])+'</span><span>'+inr(x[0]*x[1])+'</span></div>')});
-  document.getElementById("total").textContent=inr(r.total);
-  document.getElementById("tix").textContent=r.tix;
-  document.getElementById("bill").innerHTML=html.length?html.join(""):'<div class="empty">Tap + or type the ticket count.</div>';
-
-  if(document.activeElement!==cashEl)cashEl.value=cashPaid?cashPaid:"";
-  if(document.activeElement!==upiEl)upiEl.value=upiPaid?upiPaid:"";
-
-  var bal=document.getElementById("balInfo");
-  var entered=cashPaid+upiPaid;
-  if(!r.total){
-    bal.className="bal";
-    bal.innerHTML="<span>Enter cash and/or online paid amount</span><span></span>";
-  }else if(!entered){
-    bal.className="bal";
-    bal.innerHTML="<span>Leave blank to record full as Cash</span><span>"+inr(r.total)+"</span>";
-  }else if(entered===r.total){
-    bal.className="bal ok";
-    bal.innerHTML="<span>Paid in full</span><span>"+inr(entered)+"</span>";
-  }else if(entered<r.total){
-    bal.className="bal warn";
-    bal.innerHTML="<span>Remaining balance</span><span>"+inr(r.total-entered)+"</span>";
-  }else{
-    bal.className="bal warn";
-    bal.innerHTML="<span>Extra / Change</span><span>+"+inr(entered-r.total)+"</span>";
+  b.lines.forEach(function(x){html.push('<div class="line"><span>'+x[1]+' × '+inr(x[0])+'</span><span>'+inr(x[0]*x[1])+'</span></div>')});
+  if(b.lines.length&&(b.cash>0||b.upi>0)){
+    html.push('<div class="line"><span>Prize subtotal</span><span>'+inr(b.prize)+'</span></div>');
   }
+  if(b.cash>0)html.push('<div class="line"><span>Cash</span><span>'+inr(b.cash)+'</span></div>');
+  if(b.upi>0)html.push('<div class="line"><span>Online / UPI</span><span>'+inr(b.upi)+'</span></div>');
+  if(html.length){
+    html.push('<div class="line tot"><span>Grand total</span><span>'+inr(b.total)+'</span></div>');
+  }
+
+  document.getElementById("total").textContent=inr(b.total);
+  document.getElementById("tix").textContent=b.tix;
+  document.getElementById("bill").innerHTML=html.length?html.join(""):'<div class="empty">Tap + or enter cash / online amount.</div>';
+
+  if(document.activeElement!==cashEl)cashEl.value=cashAmt?cashAmt:"";
+  if(document.activeElement!==upiEl)upiEl.value=upiAmt?upiAmt:"";
 
   var d=dayBreakdown();
   document.getElementById("dayTotal").textContent=inr(d.total);
   document.getElementById("dayInfo").textContent=log.length+" bills · "+d.tix+" tickets";
+  document.getElementById("dayPrize").textContent=inr(d.prize);
   document.getElementById("dayCash").textContent=inr(d.cash);
   document.getElementById("dayUpi").textContent=inr(d.upi);
   updateLinks();
@@ -314,12 +287,12 @@ document.getElementById("addTile").onclick=function(){
   if(amounts.indexOf(v)<0){amounts.push(v);amounts.sort(function(a,b){return a-b})}
   i.value="";build();
 };
-document.getElementById("clear").onclick=function(){counts={};cashPaid=0;upiPaid=0;calc()};
+document.getElementById("clear").onclick=function(){counts={};cashAmt=0;upiAmt=0;calc()};
 document.getElementById("done").onclick=function(){
-  var l=curLines();if(!l.length){msg("Nothing in this bill.");return}
-  var r=sumLines(l),p=resolvedBillPay(r.total);
-  log.push({t:Date.now(),lines:l,total:r.total,tix:r.tix,cash:p.cash,upi:p.upi});
-  counts={};cashPaid=0;upiPaid=0;calc();msg("Bill added to day.");
+  var b=curBill();
+  if(!b.lines.length&&!b.cash&&!b.upi){msg("Nothing in this bill.");return}
+  log.push({t:Date.now(),lines:b.lines,prize:b.prize,tix:b.tix,cash:b.cash,upi:b.upi,total:b.total});
+  counts={};cashAmt=0;upiAmt=0;calc();msg("Added to day.");
 };
 var armed=false;
 document.getElementById("resetDay").onclick=function(){
@@ -338,7 +311,7 @@ guardLink(document.getElementById("tg"),function(){return !!billText()},"Nothing
 guardLink(document.getElementById("dayWa"),function(){return !!dayText()},"No bills added today yet.");
 guardLink(document.getElementById("dayTg"),function(){return !!dayText()},"No bills added today yet.");
 
-/* PDF Share Sheet Only (Falls back to WhatsApp text if PDF share isn't supported) */
+/* PDF Share Sheet Only */
 function makePdf(title,sub,tables,grand,tix,extraRows){
   var J=window.jspdf&&window.jspdf.jsPDF;if(!J)return null;
   var doc=new J({unit:"mm",format:"a4"}),y=20,L=18,R=192;
@@ -359,6 +332,7 @@ function makePdf(title,sub,tables,grand,tix,extraRows){
     y+=2.5;
   }
   tables.forEach(function(t){
+    if(!t.rows.length)return;
     head(t.head,t.cols,t.widths,t.aligns);
     doc.setFontSize(11);
     t.rows.forEach(function(r){
@@ -383,7 +357,7 @@ function makePdf(title,sub,tables,grand,tix,extraRows){
   doc.setFont("helvetica","bold");doc.setFontSize(12);
   doc.text("Total number of tickets",L+4,cy);doc.text(String(tix),R-4,cy,{align:"right"});cy+=8;
   doc.setFontSize(14);
-  doc.text("Total amount",L+4,cy);doc.text(rs(grand),R-4,cy,{align:"right"});
+  doc.text("Grand total",L+4,cy);doc.text(rs(grand),R-4,cy,{align:"right"});
   return doc.output("blob");
 }
 
@@ -405,14 +379,16 @@ function stampName(ts){var d=new Date(ts);function z(n){return(n<10?"0":"")+n}re
 var PW=[16,64,42,52],PA=["l","r","r","r"],PC=["No.","Prize amount","Count","Amount"];
 
 document.getElementById("billPdf").onclick=function(){
-  var l=curLines();if(!l.length){msg("Nothing in this bill.");return}
-  var r=sumLines(l),p=resolvedBillPay(r.total),now=Date.now();
-  var rows=l.map(function(x,i){return[i+1,rs(x[0]),x[1],rs(x[0]*x[1])]});
+  var b=curBill();
+  if(!b.lines.length&&!b.cash&&!b.upi){msg("Nothing in this bill.");return}
+  var now=Date.now();
+  var rows=b.lines.map(function(x,i){return[i+1,rs(x[0]),x[1],rs(x[0]*x[1])]});
   var extra=[];
-  if(p.cash>0)extra.push(["Cash paid",rs(p.cash)]);
-  if(p.upi>0)extra.push(["Online / UPI paid",rs(p.upi)]);
+  if(b.lines.length)extra.push(["Prize money",rs(b.prize)]);
+  if(b.cash>0)extra.push(["Cash",rs(b.cash)]);
+  if(b.upi>0)extra.push(["Online / UPI",rs(b.upi)]);
   sharePdfToApp(
-    makePdf("Prize Payout Bill",stamp(now),[{head:"Prize details",cols:PC,widths:PW,aligns:PA,rows:rows}],r.total,r.tix,extra),
+    makePdf("Bill Summary",stamp(now),[{head:"Prize details",cols:PC,widths:PW,aligns:PA,rows:rows}],b.total,b.tix,extra),
     "bill-"+stampName(now)+".pdf",
     billText()
   );
@@ -421,19 +397,20 @@ document.getElementById("billPdf").onclick=function(){
 document.getElementById("dayPdf").onclick=function(){
   if(!log.length){msg("No bills added today yet.");return}
   var agg={},d=dayBreakdown(),now=Date.now();
-  log.forEach(function(b){b.lines.forEach(function(x){agg[x[0]]=(agg[x[0]]||0)+x[1]})});
+  log.forEach(function(b){(b.lines||[]).forEach(function(x){agg[x[0]]=(agg[x[0]]||0)+x[1]})});
   var keys=Object.keys(agg).map(Number).sort(function(a,b){return a-b});
   var sum=keys.map(function(a,i){return[i+1,rs(a),agg[a],rs(a*agg[a])]});
   var bills=log.map(function(b,i){
-    var bc=(typeof b.cash==="number"||typeof b.upi==="number")?(b.cash||0):(b.mode==="UPI"?0:b.total);
-    var bu=(typeof b.cash==="number"||typeof b.upi==="number")?(b.upi||0):(b.mode==="UPI"?b.total:0);
-    return[i+1,new Date(b.t).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}),rs(bc),rs(bu),rs(b.total)];
+    var bc=b.cash||0,bu=b.upi||0;
+    var bp=(typeof b.prize==="number")?b.prize:Math.max(0,(b.total||0)-bc-bu);
+    var bt=(typeof b.total==="number")?b.total:(bp+bc+bu);
+    return[i+1,new Date(b.t).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}),rs(bp),rs(bc),rs(bu),rs(bt)];
   });
   sharePdfToApp(
-    makePdf("Daily Payout Report",stamp(now),[
+    makePdf("Daily Report",stamp(now),[
       {head:"Summary by prize amount",cols:PC,widths:PW,aligns:PA,rows:sum},
-      {head:"Bills ("+log.length+")",cols:["Bill","Time","Cash","Online","Total"],widths:[16,38,40,40,40],aligns:["l","r","r","r","r"],rows:bills}
-    ],d.total,d.tix,[["Cash paid",rs(d.cash)],["Online / UPI paid",rs(d.upi)]]),
+      {head:"Entries ("+log.length+")",cols:["No.","Time","Prize","Cash","Online","Total"],widths:[14,28,33,33,33,33],aligns:["l","r","r","r","r","r"],rows:bills}
+    ],d.total,d.tix,[["Prize money",rs(d.prize)],["Cash",rs(d.cash)],["Online / UPI",rs(d.upi)]]),
     "day-report-"+stampName(now)+".pdf",
     dayText()
   );
