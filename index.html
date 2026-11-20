@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lottery Cash Counter</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--text:#14181f;--muted:#5d6675;--line:#dfe3ea;--accent:#0a7a4b;--accent-bg:#e4f5ec;--danger:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101317;--card:#1a1f26;--text:#eef1f5;--muted:#9aa4b2;--line:#2c333d;--accent:#4cd694;--accent-bg:#14301f;--danger:#ff8a80}}
+:root[data-theme="dark"]{--bg:#101317;--card:#1a1f26;--text:#eef1f5;--muted:#9aa4b2;--line:#2c333d;--accent:#4cd694;--accent-bg:#14301f;--danger:#ff8a80}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:560px;margin:0 auto;padding:0 14px 24px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding:12px 0 8px;z-index:5}
+.total{background:var(--accent-bg);border-radius:16px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.total .lbl{font-size:.8rem;color:var(--muted)}
+.total .big{font-size:2.2rem;font-weight:800;color:var(--accent);line-height:1.1}
+.total .cnt{text-align:right;font-size:.8rem;color:var(--muted)}
+.total .cnt b{display:block;font-size:1.3rem;color:var(--text)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center}
+.tile.on{border-color:var(--accent)}
+.amt{font-size:1.25rem;font-weight:700}
+.sub{font-size:.75rem;color:var(--muted);min-height:1.1em}
+.ctl{display:flex;align-items:center;gap:6px;margin-top:6px}
+.ctl button{width:44px;height:44px;flex:none;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--text);font-size:1.5rem;cursor:pointer;line-height:1}
+.ctl button.plus{background:var(--accent);border-color:var(--accent);color:#fff}
+.ctl input{flex:1;min-width:0;width:100%;height:44px;text-align:center;font-size:1.3rem;font-weight:700;padding:0 4px}
+.rm{border:0;background:none;color:var(--danger);font-size:.72rem;cursor:pointer;padding:4px;margin-top:2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:14px}
+.card h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 0 8px}
+.add{display:flex;gap:8px}
+input{flex:1;min-width:0;padding:11px 10px;font-size:1rem;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text)}
+input:focus{outline:2px solid var(--accent)}
+.b{padding:11px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:.95rem;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.b.p{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.b.d{color:var(--danger)}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.acts .b{padding:14px}
+.line{display:flex;justify-content:space-between;padding:4px 0;font-size:.95rem}
+.line span:last-child{font-weight:600}
+.day{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.day .v{font-size:1.5rem;font-weight:700}
+.empty{color:var(--muted);font-size:.9rem}
+.pdfrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+#msg{margin-top:10px;font-size:.85rem;color:var(--muted);min-height:1.2em;text-align:center}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+<main>
+<div class="top">
+  <div class="total">
+    <div><div class="lbl">Total to pay</div><div class="big" id="total">₹0</div></div>
+    <div class="cnt">Tickets<b id="tix">0</b></div>
+  </div>
+</div>
+
+<div class="tiles" id="tiles"></div>
+
+<div class="card">
+  <h2>Other amount</h2>
+  <div class="add">
+    <input id="custom" type="number" inputmode="numeric" placeholder="e.g. 250">
+    <button class="b p" id="addTile">Add</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>This bill</h2>
+  <div id="bill"><div class="empty">Tap + or type the ticket count.</div></div>
+  <div class="pdfrow"><button class="b" id="billPdf">Share PDF</button><button class="b p" id="done">Done · add to day</button></div>
+  <div class="pdfrow"><a class="b" id="wa" href="https://wa.me/" target="_blank" rel="noopener">Send on WhatsApp</a><a class="b" id="tg" href="https://t.me/share/url" target="_blank" rel="noopener">Send on Telegram</a></div>
+</div>
+
+<div class="acts">
+  <button class="b d" id="clear">Clear bill</button>
+  <button class="b" id="dayPdf">Share day PDF</button>
+</div>
+
+<div class="card">
+  <h2>Today</h2>
+  <div class="day"><div><div class="v" id="dayTotal">₹0</div><div class="empty" id="dayInfo">0 bills</div></div>
+  <button class="b d" id="resetDay">Reset day</button></div>
+  <div class="pdfrow"><a class="b" id="dayWa" href="https://wa.me/" target="_blank" rel="noopener">Day on WhatsApp</a><a class="b" id="dayTg" href="https://t.me/share/url" target="_blank" rel="noopener">Day on Telegram</a></div>
+</div>
+<div id="msg"></div>
+</main>
+
+<script>
+(function(){
+var KEY="lcc_v2";
+var DEFAULT=[100,200,500,1000,2000,5000];
+var amounts=DEFAULT.slice();
+var counts={};
+var log=[];
+try{var s=JSON.parse(localStorage.getItem(KEY)||"null");
+if(s){if(s.amounts&&s.amounts.length)amounts=s.amounts;counts=s.counts||{};log=s.log||[]}}catch(e){}
+var fmt=new Intl.NumberFormat("en-IN");
+function inr(n){return "₹"+fmt.format(n)}
+function rs(n){return "Rs. "+fmt.format(n)}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({amounts:amounts,counts:counts,log:log}))}catch(e){}}
+function msg(t){var m=document.getElementById("msg");m.textContent=t;if(t)setTimeout(function(){if(m.textContent===t)m.textContent=""},4000)}
+var tiles=document.getElementById("tiles");
+function build(){
+  tiles.innerHTML="";
+  amounts.forEach(function(a){
+    var d=document.createElement("div");d.className="tile";d.id="t"+a;
+    d.innerHTML='<div class="amt">'+inr(a)+'</div><div class="sub"></div>'+
+    '<div class="ctl"><button data-m="'+a+'" aria-label="Minus">−</button><input data-c="'+a+'" type="number" inputmode="numeric" min="0" placeholder="0"><button class="plus" data-p="'+a+'" aria-label="Plus">+</button></div>'+
+    (DEFAULT.indexOf(a)<0?'<button class="rm" data-rm="'+a+'">remove</button>':'');
+    tiles.appendChild(d);
+  });
+  calc();
+}
+function curLines(){
+  var l=[];amounts.forEach(function(a){var c=counts[a]||0;if(c)l.push([a,c])});return l;
+}
+function sumLines(l){var t=0,n=0;l.forEach(function(x){t+=x[0]*x[1];n+=x[1]});return{total:t,tix:n}}
+function stamp(ts){var d=new Date(ts);return d.toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"})+", "+d.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"})}
+
+function billText(){
+  var l=curLines();if(!l.length)return null;
+  var r=sumLines(l),t=["*Prize Payout Bill* - "+stamp(Date.now()),""];
+  l.forEach(function(x){t.push(x[1]+" x "+rs(x[0])+" = "+rs(x[0]*x[1]))});
+  t.push("","Total tickets: *"+r.tix+"*","Total amount: *"+rs(r.total)+"*");
+  return t.join("\n");
+}
+
+function dayText(){
+  if(!log.length)return null;
+  var agg={},grand=0,tix=0;
+  log.forEach(function(b){grand+=b.total;tix+=b.tix;b.lines.forEach(function(x){agg[x[0]]=(agg[x[0]]||0)+x[1]})});
+  var keys=Object.keys(agg).map(Number).sort(function(a,b){return a-b});
+  var t=["*Daily Payout Report* - "+stamp(Date.now()),"Bills: "+log.length,""];
+  keys.forEach(function(a){t.push(agg[a]+" x "+rs(a)+" = "+rs(a*agg[a]))});
+  t.push("","Total tickets: *"+tix+"*","Total amount: *"+rs(grand)+"*");
+  return t.join("\n");
+}
+
+function updateLinks(){
+  var bt=billText();
+  var wa=document.getElementById("wa"),tg=document.getElementById("tg");
+  wa.href=bt?"https://wa.me/?text="+encodeURIComponent(bt):"#";
+  tg.href=bt?"https://t.me/share/url?url=%20&text="+encodeURIComponent(bt):"#";
+
+  var dt=dayText();
+  var dwa=document.getElementById("dayWa"),dtg=document.getElementById("dayTg");
+  dwa.href=dt?"https://wa.me/?text="+encodeURIComponent(dt):"#";
+  dtg.href=dt?"https://t.me/share/url?url=%20&text="+encodeURIComponent(dt):"#";
+}
+
+function calc(){
+  var lines=curLines(),r=sumLines(lines),html=[];
+  amounts.forEach(function(a){
+    var c=counts[a]||0,t=document.getElementById("t"+a);
+    if(!t)return;
+    var inp=t.querySelector("input");
+    if(document.activeElement!==inp)inp.value=c?c:"";
+    t.querySelector(".sub").textContent=c?inr(a*c):"";
+    t.className="tile"+(c?" on":"");
+  });
+  lines.forEach(function(x){html.push('<div class="line"><span>'+x[1]+' × '+inr(x[0])+'</span><span>'+inr(x[0]*x[1])+'</span></div>')});
+  document.getElementById("total").textContent=inr(r.total);
+  document.getElementById("tix").textContent=r.tix;
+  document.getElementById("bill").innerHTML=html.length?html.join(""):'<div class="empty">Tap + or type the ticket count.</div>';
+  var dt=0,dn=0;log.forEach(function(b){dt+=b.total;dn+=b.tix});
+  document.getElementById("dayTotal").textContent=inr(dt);
+  document.getElementById("dayInfo").textContent=log.length+" bills · "+dn+" tickets";
+  updateLinks();
+  save();
+}
+tiles.addEventListener("click",function(e){
+  var b=e.target.closest("button");if(!b)return;
+  var p=b.getAttribute("data-p"),m=b.getAttribute("data-m"),r=b.getAttribute("data-rm");
+  if(p!==null){counts[p]=(counts[p]||0)+1;calc();if(navigator.vibrate)try{navigator.vibrate(10)}catch(x){}}
+  else if(m!==null){counts[m]=Math.max(0,(counts[m]||0)-1);calc()}
+  else if(r!==null){var a=+r;amounts=amounts.filter(function(x){return x!==a});delete counts[a];build()}
+});
+tiles.addEventListener("input",function(e){
+  var a=e.target.getAttribute("data-c");if(a===null)return;
+  var v=Math.floor(parseFloat(e.target.value));
+  counts[a]=(isFinite(v)&&v>0)?v:0;
+  calc();
+});
+document.getElementById("addTile").onclick=function(){
+  var i=document.getElementById("custom"),v=Math.floor(parseFloat(i.value));
+  if(!(v>0))return;
+  if(amounts.indexOf(v)<0){amounts.push(v);amounts.sort(function(a,b){return a-b})}
+  i.value="";build();
+};
+document.getElementById("clear").onclick=function(){counts={};calc()};
+document.getElementById("done").onclick=function(){
+  var l=curLines();if(!l.length){msg("Nothing in this bill.");return}
+  var r=sumLines(l);
+  log.push({t:Date.now(),lines:l,total:r.total,tix:r.tix});
+  counts={};calc();msg("Bill added to day.");
+};
+var armed=false;
+document.getElementById("resetDay").onclick=function(){
+  var b=this;
+  if(!armed){armed=true;b.textContent="Tap again";setTimeout(function(){armed=false;b.textContent="Reset day"},3000);return}
+  armed=false;b.textContent="Reset day";log=[];calc();
+};
+
+function guardLink(el,hasData,emptyMsg){
+  el.addEventListener("click",function(e){
+    if(!hasData()){e.preventDefault();msg(emptyMsg);}
+  });
+}
+guardLink(document.getElementById("wa"),function(){return !!billText()},"Nothing in this bill.");
+guardLink(document.getElementById("tg"),function(){return !!billText()},"Nothing in this bill.");
+guardLink(document.getElementById("dayWa"),function(){return !!dayText()},"No bills added today yet.");
+guardLink(document.getElementById("dayTg"),function(){return !!dayText()},"No bills added today yet.");
+
+/* PDF Share Sheet Only (Falls back to WhatsApp text if PDF share isn't supported) */
+function makePdf(title,ts,tables,grand,tix){
+  var J=window.jspdf&&window.jspdf.jsPDF;if(!J)return null;
+  var doc=new J({unit:"mm",format:"a4"}),y=20,L=18,R=192;
+  function need(h){if(y+h>280){doc.addPage();y=20}}
+  doc.setFont("helvetica","bold");doc.setFontSize(18);doc.text(title,L,y);y+=7;
+  doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(110);doc.text(stamp(ts),L,y);doc.setTextColor(0);y+=10;
+  function cellText(txt,x,w,al,bold){
+    doc.setFont("helvetica",bold?"bold":"normal");
+    if(al==="r")doc.text(String(txt),x+w-2,y,{align:"right"});else doc.text(String(txt),x+2,y);
+  }
+  function head(t,cols,widths,aligns){
+    need(30);
+    doc.setFont("helvetica","bold");doc.setFontSize(12);doc.text(t,L,y);y+=4;
+    doc.setFillColor(230,236,243);doc.setDrawColor(190);
+    doc.rect(L,y,R-L,8,"FD");y+=5.5;
+    doc.setFontSize(10);
+    var x=L;cols.forEach(function(c,i){cellText(c,x,widths[i],aligns[i],true);x+=widths[i]});
+    y+=2.5;
+  }
+  tables.forEach(function(t){
+    head(t.head,t.cols,t.widths,t.aligns);
+    doc.setFontSize(11);
+    t.rows.forEach(function(r){
+      if(y+8>280){doc.addPage();y=20;head(t.head+" (cont.)",t.cols,t.widths,t.aligns);doc.setFontSize(11)}
+      doc.setDrawColor(215);doc.rect(L,y,R-L,8);y+=5.5;
+      var x=L;r.forEach(function(c,i){cellText(c,x,t.widths[i],t.aligns[i],false);x+=t.widths[i]});
+      y+=2.5;
+    });
+    y+=8;
+  });
+  need(30);
+  doc.setFillColor(228,245,236);doc.setDrawColor(10,122,75);
+  doc.rect(L,y,R-L,22,"FD");
+  doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(0);
+  doc.text("Total number of tickets",L+4,y+8);doc.text(String(tix),R-4,y+8,{align:"right"});
+  doc.setFontSize(14);
+  doc.text("Total amount",L+4,y+17);doc.text(rs(grand),R-4,y+17,{align:"right"});
+  return doc.output("blob");
+}
+
+async function sharePdfToApp(blob,name,fallbackText){
+  if(blob){
+    try{
+      var f=new File([blob],name,{type:"application/pdf"});
+      if(navigator.canShare&&navigator.canShare({files:[f]})){
+        await navigator.share({files:[f],title:name});
+        return;
+      }
+    }catch(e){if(e&&e.name==="AbortError")return}
+  }
+  msg("PDF share unsupported here—opening WhatsApp text instead.");
+  setTimeout(function(){window.open("https://wa.me/?text="+encodeURIComponent(fallbackText),"_blank")},600);
+}
+
+function stampName(ts){var d=new Date(ts);function z(n){return(n<10?"0":"")+n}return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate())}
+var PW=[16,64,42,52],PA=["l","r","r","r"],PC=["No.","Prize amount","Count","Amount"];
+
+document.getElementById("billPdf").onclick=function(){
+  var l=curLines();if(!l.length){msg("Nothing in this bill.");return}
+  var r=sumLines(l),now=Date.now();
+  var rows=l.map(function(x,i){return[i+1,rs(x[0]),x[1],rs(x[0]*x[1])]});
+  sharePdfToApp(
+    makePdf("Prize Payout Bill",now,[{head:"Prize details",cols:PC,widths:PW,aligns:PA,rows:rows}],r.total,r.tix),
+    "bill-"+stampName(now)+".pdf",
+    billText()
+  );
+};
+
+document.getElementById("dayPdf").onclick=function(){
+  if(!log.length){msg("No bills added today yet.");return}
+  var agg={},grand=0,tix=0,now=Date.now();
+  log.forEach(function(b){grand+=b.total;tix+=b.tix;b.lines.forEach(function(x){agg[x[0]]=(agg[x[0]]||0)+x[1]})});
+  var keys=Object.keys(agg).map(Number).sort(function(a,b){return a-b});
+  var sum=keys.map(function(a,i){return[i+1,rs(a),agg[a],rs(a*agg[a])]});
+  var bills=log.map(function(b,i){return[i+1,new Date(b.t).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}),b.tix,rs(b.total)]});
+  sharePdfToApp(
+    makePdf("Daily Payout Report",now,[
+      {head:"Summary by prize amount",cols:PC,widths:PW,aligns:PA,rows:sum},
+      {head:"Bills ("+log.length+")",cols:["Bill","Time","Tickets","Amount"],widths:PW,aligns:["l","r","r","r"],rows:bills}
+    ],grand,tix),
+    "day-report-"+stampName(now)+".pdf",
+    dayText()
+  );
+};
+
+build();
+})();
+</script>
+</body>
+</html>
